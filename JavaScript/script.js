@@ -78,6 +78,9 @@
     sections.forEach(function (section) { observer.observe(section); });
   }
 
+  var modal = document.getElementById("successModal");
+  var modalClose = document.getElementById("modalCloseBtn");
+
   if (contactForm && submitBtn) {
     contactForm.addEventListener("submit", function (e) {
       e.preventDefault();
@@ -94,12 +97,10 @@
       })
       .then(function (res) { return res.json(); })
       .then(function () {
-        submitBtn.innerHTML = "Message Sent \u2713";
         contactForm.reset();
-        setTimeout(function () {
-          submitBtn.innerHTML = orig;
-          submitBtn.disabled = false;
-        }, 3000);
+        submitBtn.innerHTML = orig;
+        submitBtn.disabled = false;
+        if (modal) { modal.classList.add("open"); }
       })
       .catch(function () {
         submitBtn.innerHTML = "Failed \u2717";
@@ -108,6 +109,15 @@
           submitBtn.disabled = false;
         }, 3000);
       });
+    });
+  }
+
+  if (modalClose && modal) {
+    modalClose.addEventListener("click", function () {
+      modal.classList.remove("open");
+    });
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) { modal.classList.remove("open"); }
     });
   }
 })();

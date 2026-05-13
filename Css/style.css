@@ -312,6 +312,26 @@ footer .footer-links svg{width:16px;height:16px;display:block}
 .more-card .mc-link{font-size:14px;font-weight:600;color:var(--text);border-bottom:2px solid var(--text);padding-bottom:2px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;transition:color 0.2s,border-color 0.2s;align-self:flex-start}
 .more-card:hover .mc-link{color:var(--accent);border-bottom-color:var(--accent)}
 
+/* Modal */
+.modal-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
+background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+opacity:0;visibility:hidden;transition:opacity 0.3s,visibility 0.3s}
+.modal-overlay.open{opacity:1;visibility:hidden}
+.modal-overlay.open{opacity:1;visibility:visible}
+.modal-card{background:var(--bg);border:1px solid var(--border);padding:48px 40px 40px;
+max-width:400px;width:90%;text-align:center;transform:scale(0.95) translateY(8px);
+transition:transform 0.3s ease;box-shadow:0 24px 48px rgba(0,0,0,0.15)}
+.modal-overlay.open .modal-card{transform:scale(1) translateY(0)}
+.modal-icon{display:flex;align-items:center;justify-content:center;width:56px;height:56px;
+border-radius:50%;background:rgba(37,99,235,0.1);color:#2563EB;margin:0 auto 24px}
+.modal-icon svg{width:28px;height:28px;display:block}
+.modal-title{font-size:22px;font-weight:900;color:var(--text);margin-bottom:12px}
+.modal-text{font-size:15px;line-height:1.6;color:var(--muted);margin-bottom:32px}
+.modal-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 32px;font-weight:700;
+background:var(--text);color:var(--bg);border:none;cursor:pointer;font-family:'Inter',sans-serif;
+font-size:15px;transition:background 0.2s,color 0.2s}
+.modal-btn:hover{background:#2563EB;color:#fff}
+
 /* Utilities */
 @media(min-width:1024px){.desktop-only{display:block}}
 .hidden{display:none}
