@@ -120,4 +120,480 @@
       if (e.target === modal) { modal.classList.remove("open"); }
     });
   }
+
+  // ============== Screenshot Lightbox ==============
+  var zoomIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>';
+  var arrowLeftSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+  var arrowRightSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
+
+  var ssItems = document.querySelectorAll('.ss-item');
+  if (ssItems.length > 0) {
+    ssItems.forEach(function (item) {
+      var img = item.querySelector('img');
+      if (!img) return;
+
+      var wrap = document.createElement('div');
+      wrap.className = 'ss-img-wrap';
+
+      var zoomIcon = document.createElement('div');
+      zoomIcon.className = 'zoom-icon';
+      zoomIcon.innerHTML = zoomIconSvg;
+
+      img.parentNode.insertBefore(wrap, img);
+      wrap.appendChild(img);
+      wrap.appendChild(zoomIcon);
+
+      wrap.addEventListener('click', function () {
+        var allImgs = document.querySelectorAll('.ss-item img');
+        var idx = 0;
+        var imgs = [];
+        allImgs.forEach(function (i, index) {
+          imgs.push({ src: i.getAttribute('src'), alt: i.getAttribute('alt') || '' });
+          if (i === img) idx = index;
+        });
+        openLightbox(imgs, idx);
+      });
+    });
+  }
+
+  function openLightbox(images, index) {
+    var existing = document.querySelector('.lightbox-overlay');
+    if (existing) existing.remove();
+
+    var overlay = document.createElement('div');
+    overlay.className = 'lightbox-overlay';
+
+    // Top bar
+    var topBar = document.createElement('div');
+    topBar.className = 'lightbox-top-bar';
+
+    var counter = document.createElement('div');
+    counter.className = 'lightbox-counter';
+    counter.innerHTML = '<span class="current">' + (index + 1) + '</span> / ' + images.length;
+
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'lightbox-close';
+    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+    topBar.appendChild(counter);
+    topBar.appendChild(closeBtn);
+
+    // Nav
+    var prevBtn = document.createElement('button');
+    prevBtn.className = 'lightbox-nav prev';
+    prevBtn.setAttribute('aria-label', 'Previous');
+    prevBtn.innerHTML = arrowLeftSvg;
+
+    var nextBtn = document.createElement('button');
+    nextBtn.className = 'lightbox-nav next';
+    nextBtn.setAttribute('aria-label', 'Next');
+    nextBtn.innerHTML = arrowRightSvg;
+
+    // Image
+    var imgWrap = document.createElement('div');
+    imgWrap.className = 'lightbox-img-wrap';
+
+    var spinner = document.createElement('div');
+    spinner.className = 'lightbox-spinner';
+
+    var imgEl = document.createElement('img');
+    imgEl.draggable = false;
+    imgEl.classList.add('loading');
+
+    imgWrap.appendChild(spinner);
+    imgWrap.appendChild(imgEl);
+
+    // Bottom bar
+    var bottomBar = document.createElement('div');
+    bottomBar.className = 'lightbox-bottom-bar';
+
+    var zoomOutBtn = document.createElement('button');
+    zoomOutBtn.className = 'lightbox-btn';
+    zoomOutBtn.textContent = '\u2212';
+    zoomOutBtn.setAttribute('aria-label', 'Zoom out');
+
+    var zoomResetBtn = document.createElement('button');
+    zoomResetBtn.className = 'lightbox-btn zoom-reset';
+    zoomResetBtn.innerHTML = '\u21BA <span style="font-size:11px;opacity:0.6">Reset</span>';
+
+    var zoomInBtn = document.createElement('button');
+    zoomInBtn.className = 'lightbox-btn';
+    zoomInBtn.textContent = '+';
+    zoomInBtn.setAttribute('aria-label', 'Zoom in');
+
+    var zoomDivider = document.createElement('span');
+    zoomDivider.className = 'lightbox-zoom-divider';
+
+    var zoomLabel = document.createElement('span');
+    zoomLabel.className = 'lightbox-zoom-label';
+    zoomLabel.textContent = '100%';
+
+    bottomBar.appendChild(zoomOutBtn);
+    bottomBar.appendChild(zoomResetBtn);
+    bottomBar.appendChild(zoomInBtn);
+    bottomBar.appendChild(zoomDivider);
+    bottomBar.appendChild(zoomLabel);
+
+    // Dots
+    var dotsWrap = document.createElement('div');
+    dotsWrap.className = 'lightbox-dots';
+    var dots = [];
+    if (images.length > 1) {
+      for (var d = 0; d < images.length; d++) {
+        var dot = document.createElement('button');
+        dot.className = 'lightbox-dot' + (d === index ? ' active' : '');
+        dot.setAttribute('aria-label', 'Go to image ' + (d + 1));
+        (function (idx) {
+          dot.addEventListener('click', function (e) {
+            e.stopPropagation();
+            goTo(idx);
+          });
+        })(d);
+        dotsWrap.appendChild(dot);
+        dots.push(dot);
+      }
+    }
+
+    overlay.appendChild(topBar);
+    overlay.appendChild(prevBtn);
+    overlay.appendChild(nextBtn);
+    overlay.appendChild(imgWrap);
+    overlay.appendChild(bottomBar);
+    overlay.appendChild(dotsWrap);
+    document.body.appendChild(overlay);
+
+    var currentIndex = index;
+    var scale = 1;
+    var translateX = 0;
+    var translateY = 0;
+    var isDragging = false;
+    var startX, startY;
+    var minScale = 0.5;
+    var maxScale = 10;
+    var isTransitioning = false;
+    var hideTimer = null;
+    var controlsVisible = true;
+
+    function showControls() {
+      controlsVisible = true;
+      bottomBar.classList.remove('hidden');
+      dotsWrap.classList.remove('hidden');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(function () {
+        if (!isDragging && scale <= 1) {
+          controlsVisible = false;
+          bottomBar.classList.add('hidden');
+          dotsWrap.classList.add('hidden');
+        }
+      }, 3000);
+    }
+
+    function showControlsOnce() {
+      controlsVisible = true;
+      bottomBar.classList.remove('hidden');
+      dotsWrap.classList.remove('hidden');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(function () {
+        if (scale <= 1) {
+          controlsVisible = false;
+          bottomBar.classList.add('hidden');
+          dotsWrap.classList.add('hidden');
+        }
+      }, 3000);
+    }
+
+    function goTo(idx) {
+      if (isTransitioning || idx === currentIndex) return;
+      isTransitioning = true;
+      currentIndex = idx;
+      loadImage(idx);
+    }
+
+    function loadImage(idx) {
+      var imgData = images[idx];
+      scale = 1;
+      translateX = 0;
+      translateY = 0;
+      zoomLabel.textContent = '100%';
+      imgEl.style.transform = '';
+      imgEl.classList.add('loading');
+      imgEl.style.cursor = 'grab';
+
+      counter.innerHTML = '<span class="current">' + (idx + 1) + '</span> / ' + images.length;
+
+      dots.forEach(function (d, i) {
+        d.classList.toggle('active', i === idx);
+      });
+
+      imgEl.style.opacity = '0';
+
+      var tempImg = new Image();
+      tempImg.onload = function () {
+        imgEl.src = src;
+        imgEl.alt = imgData.alt;
+        imgEl.style.opacity = '1';
+        imgEl.classList.remove('loading');
+        applyTransform();
+        isTransitioning = false;
+      };
+      tempImg.onerror = function () {
+        imgEl.src = src;
+        imgEl.alt = imgData.alt;
+        imgEl.style.opacity = '1';
+        imgEl.classList.remove('loading');
+        applyTransform();
+        isTransitioning = false;
+      };
+      var src = imgData.src;
+      tempImg.src = src;
+      imgEl.src = src;
+      imgEl.alt = imgData.alt;
+    }
+
+    function clampTranslate() {
+      var rect = imgEl.getBoundingClientRect();
+      var parentRect = imgWrap.getBoundingClientRect();
+      var maxX = Math.max(0, (rect.width * scale - parentRect.width) / 2);
+      var maxY = Math.max(0, (rect.height * scale - parentRect.height) / 2);
+      translateX = Math.max(-maxX, Math.min(maxX, translateX));
+      translateY = Math.max(-maxY, Math.min(maxY, translateY));
+    }
+
+    function applyTransform() {
+      if (scale > 1) clampTranslate();
+      imgEl.style.transform = 'translate(' + translateX + 'px,' + translateY + 'px) scale(' + scale + ')';
+      zoomLabel.textContent = Math.round(scale * 100) + '%';
+    }
+
+    function zoomAtPoint(newScale, cx, cy) {
+      var rect = imgEl.getBoundingClientRect();
+      var ox = cx - rect.left;
+      var oy = cy - rect.top;
+      var ratio = newScale / scale;
+      translateX = (cx - rect.left - ox * ratio) + (rect.width - rect.width * ratio) / 2;
+      translateY = (cy - rect.top - oy * ratio) + (rect.height - rect.height * ratio) / 2;
+      scale = newScale;
+      applyTransform();
+    }
+
+    function zoomDelta(delta, cx, cy) {
+      var newScale = scale * (1 + delta);
+      newScale = Math.max(minScale, Math.min(maxScale, newScale));
+      if (newScale !== scale) {
+        zoomAtPoint(newScale, cx || window.innerWidth / 2, cy || window.innerHeight / 2);
+        showControlsOnce();
+      }
+    }
+
+    function toggleZoom(cx, cy) {
+      if (scale > 1.1) {
+        scale = 1;
+        translateX = 0;
+        translateY = 0;
+        applyTransform();
+        showControlsOnce();
+      } else {
+        zoomAtPoint(2.5, cx, cy);
+        showControlsOnce();
+      }
+    }
+
+    loadImage(currentIndex);
+
+    // Open animation
+    requestAnimationFrame(function () {
+      overlay.classList.add('open');
+      showControls();
+    });
+
+    // Click outside image to close
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeLightbox();
+    });
+
+    closeBtn.addEventListener('click', closeLightbox);
+
+    function closeLightbox() {
+      overlay.classList.remove('open');
+      setTimeout(function () { overlay.remove(); }, 400);
+    }
+
+    // Navigation
+    if (images.length > 1) {
+      prevBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        goTo((currentIndex - 1 + images.length) % images.length);
+      });
+      nextBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        goTo((currentIndex + 1) % images.length);
+      });
+    } else {
+      prevBtn.classList.add('hidden');
+      nextBtn.classList.add('hidden');
+    }
+
+    // Zoom buttons
+    zoomInBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      zoomDelta(0.25);
+    });
+
+    zoomOutBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      zoomDelta(-0.25);
+    });
+
+    zoomResetBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      scale = 1;
+      translateX = 0;
+      translateY = 0;
+      applyTransform();
+      showControlsOnce();
+    });
+
+    // Mouse wheel zoom
+    imgWrap.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      var delta = e.deltaY > 0 ? -0.12 : 0.12;
+      zoomDelta(delta, e.clientX, e.clientY);
+    }, { passive: false });
+
+    // Mouse move to show controls
+    overlay.addEventListener('mousemove', function () {
+      showControls();
+    });
+
+    // Double-click to zoom
+    imgEl.addEventListener('dblclick', function (e) {
+      e.preventDefault();
+      toggleZoom(e.clientX, e.clientY);
+    });
+
+    // Click on image to zoom when not dragging
+    var clickStartX, clickStartY, clickTime;
+    imgEl.addEventListener('mousedown', function (e) {
+      clickStartX = e.clientX;
+      clickStartY = e.clientY;
+      clickTime = Date.now();
+      if (scale <= 1) return;
+      isDragging = true;
+      startX = e.clientX - translateX;
+      startY = e.clientY - translateY;
+      imgEl.classList.add('dragging');
+    });
+
+    document.addEventListener('mousemove', function (e) {
+      if (!isDragging) return;
+      translateX = e.clientX - startX;
+      translateY = e.clientY - startY;
+      applyTransform();
+    });
+
+    document.addEventListener('mouseup', function (e) {
+      if (isDragging) {
+        isDragging = false;
+        imgEl.classList.remove('dragging');
+        var dist = Math.abs(e.clientX - clickStartX) + Math.abs(e.clientY - clickStartY);
+        if (dist < 10 && Date.now() - clickTime < 200 && scale <= 1) {
+          toggleZoom(e.clientX, e.clientY);
+        }
+      }
+    });
+
+    // Touch
+    var lastTouchDist = 0;
+    var touchStartX, touchStartY, touchStartTime;
+    var swipeStartX;
+
+    imgEl.addEventListener('touchstart', function (e) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+      swipeStartX = e.touches[0].clientX;
+
+      if (e.touches.length === 1 && scale > 1) {
+        isDragging = true;
+        startX = e.touches[0].clientX - translateX;
+        startY = e.touches[0].clientY - translateY;
+        imgEl.classList.add('dragging');
+      }
+      if (e.touches.length === 2) {
+        var dx = e.touches[0].clientX - e.touches[1].clientX;
+        var dy = e.touches[0].clientY - e.touches[1].clientY;
+        lastTouchDist = Math.sqrt(dx * dx + dy * dy);
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', function (e) {
+      if (e.touches.length === 1) {
+        if (isDragging) {
+          translateX = e.touches[0].clientX - startX;
+          translateY = e.touches[0].clientY - startY;
+          applyTransform();
+        }
+      }
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        var dx = e.touches[0].clientX - e.touches[1].clientX;
+        var dy = e.touches[0].clientY - e.touches[1].clientY;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (lastTouchDist > 0) {
+          var pinchDelta = (dist - lastTouchDist) / lastTouchDist;
+          var midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+          var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+          zoomDelta(pinchDelta, midX, midY);
+        }
+        lastTouchDist = dist;
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchend', function (e) {
+      if (isDragging) {
+        isDragging = false;
+        imgEl.classList.remove('dragging');
+      }
+      lastTouchDist = 0;
+
+      var dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
+      var dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+      var dt = Date.now() - touchStartTime;
+
+      if (dx < 10 && dy < 10 && dt < 200) {
+        if (scale <= 1) {
+          toggleZoom(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        }
+      }
+
+      if (images.length > 1 && scale <= 1 && dx > 60 && dy < 40) {
+        if (e.changedTouches[0].clientX - swipeStartX < -30) {
+          goTo((currentIndex + 1) % images.length);
+        } else if (e.changedTouches[0].clientX - swipeStartX > 30) {
+          goTo((currentIndex - 1 + images.length) % images.length);
+        }
+      }
+    }, { passive: true });
+
+    // Keyboard
+    document.addEventListener('keydown', function onKey(e) {
+      if (!overlay.parentNode) {
+        document.removeEventListener('keydown', onKey);
+        return;
+      }
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft' && images.length > 1) {
+        e.preventDefault();
+        goTo((currentIndex - 1 + images.length) % images.length);
+      }
+      if (e.key === 'ArrowRight' && images.length > 1) {
+        e.preventDefault();
+        goTo((currentIndex + 1) % images.length);
+      }
+      if (e.key === '=' || e.key === '+') { e.preventDefault(); zoomDelta(0.25); }
+      if (e.key === '-') { e.preventDefault(); zoomDelta(-0.25); }
+      if (e.key === '0') { e.preventDefault(); scale = 1; translateX = 0; translateY = 0; applyTransform(); showControlsOnce(); }
+    });
+  }
 })();

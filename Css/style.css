@@ -285,7 +285,13 @@ footer .footer-links svg{width:16px;height:16px;display:block}
 .ss-item .ss-label-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .ss-item .ss-label-row .ss-slash{font-family:monospace;font-size:11px;color:var(--accent)}
 .ss-item .ss-label-row .ss-label{font-size:11px;text-transform:uppercase;letter-spacing:0.15em;color:var(--muted)}
-.ss-item img{width:100%;border:1px solid var(--border);display:block;object-fit:cover}
+.ss-item .ss-img-wrap{width:100%;aspect-ratio:16/10;overflow:hidden;border:1px solid var(--border);background:var(--section-bg);cursor:pointer;position:relative;transition:border-color 0.2s}
+.ss-item .ss-img-wrap:hover{border-color:var(--accent)}
+.ss-item .ss-img-wrap img{width:100%;height:100%;display:block;object-fit:cover;transition:transform 0.3s}
+.ss-item .ss-img-wrap:hover img{transform:scale(1.03)}
+.ss-item .ss-img-wrap .zoom-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;background:rgba(0,0,0,0.3);color:#fff}
+.ss-item .ss-img-wrap:hover .zoom-icon{opacity:1}
+.ss-item .ss-img-wrap .zoom-icon svg{width:32px;height:32px;display:block}
 .ss-placeholder{aspect-ratio:16/9;background:var(--section-bg);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
 .ss-placeholder svg{width:32px;height:32px;color:#D4D4D4}
 .dark .ss-placeholder svg{color:#404040}
@@ -335,6 +341,78 @@ border-radius:50%;background:rgba(37,99,235,0.1);color:#2563EB;margin:0 auto 24p
 background:var(--text);color:var(--bg);border:none;cursor:pointer;font-family:'Inter',sans-serif;
 font-size:15px;transition:background 0.2s,color 0.2s}
 .modal-btn:hover{background:#2563EB;color:#fff}
+
+/* Lightbox */
+.lightbox-overlay{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
+background:rgba(0,0,0,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+opacity:0;visibility:hidden;transition:opacity 0.4s cubic-bezier(0.4,0,0.2,1),visibility 0.4s}
+.lightbox-overlay.open{opacity:1;visibility:visible}
+.lightbox-overlay.open .lightbox-img-wrap{transform:scale(1);opacity:1}
+
+.lightbox-top-bar{position:absolute;top:0;left:0;right:0;height:64px;display:flex;align-items:center;
+justify-content:space-between;padding:0 20px;z-index:10;
+background:linear-gradient(180deg,rgba(0,0,0,0.5) 0%,transparent 100%)}
+.lightbox-counter{color:rgba(255,255,255,0.7);font-size:13px;font-family:monospace;
+letter-spacing:0.05em;padding:0 4px}
+.lightbox-counter .current{color:#fff;font-weight:700}
+.lightbox-close{width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+background:rgba(255,255,255,0.1);border:none;color:#fff;cursor:pointer;border-radius:50%;
+transition:all 0.25s ease;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.lightbox-close:hover{background:rgba(255,255,255,0.25);transform:rotate(90deg)}
+.lightbox-close svg{width:18px;height:18px;display:block}
+
+.lightbox-img-wrap{position:relative;max-width:90vw;max-height:82vh;overflow:hidden;
+display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;
+transform:scale(0.96);opacity:0;transition:transform 0.4s cubic-bezier(0.4,0,0.2,1),opacity 0.4s}
+.lightbox-img-wrap img{display:block;max-width:90vw;max-height:82vh;object-fit:contain;
+transition:transform 0.25s cubic-bezier(0.25,0.46,0.45,0.94);cursor:grab;will-change:transform}
+.lightbox-img-wrap img.dragging{cursor:grabbing;transition:none}
+.lightbox-img-wrap img.loading{opacity:0}
+.lightbox-img-wrap .lightbox-spinner{position:absolute;inset:0;display:flex;align-items:center;
+justify-content:center;pointer-events:none}
+.lightbox-img-wrap .lightbox-spinner::after{content:'';width:32px;height:32px;border:2px solid rgba(255,255,255,0.15);
+border-top-color:#fff;border-radius:50%;animation:lb-spin 0.7s linear infinite}
+@keyframes lb-spin{to{transform:rotate(360deg)}}
+
+.lightbox-bottom-bar{position:absolute;bottom:0;left:0;right:0;height:72px;display:flex;align-items:center;
+justify-content:center;gap:14px;z-index:10;opacity:0;visibility:hidden;
+transition:opacity 0.4s,visibility 0.4s;
+background:linear-gradient(0deg,rgba(0,0,0,0.5) 0%,transparent 100%)}
+.lightbox-overlay.open .lightbox-bottom-bar{opacity:1;visibility:visible}
+.lightbox-bottom-bar.hidden{opacity:0;visibility:hidden}
+.lightbox-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+background:rgba(255,255,255,0.1);border:none;color:#fff;cursor:pointer;border-radius:50%;
+transition:all 0.2s ease;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+font-size:18px;font-weight:400;font-family:inherit}
+.lightbox-btn:hover{background:rgba(255,255,255,0.25)}
+.lightbox-btn:active{transform:scale(0.92)}
+.lightbox-btn.zoom-reset{width:auto;padding:0 12px;gap:4px;font-size:13px;font-family:monospace;
+border-radius:9999px}
+.lightbox-zoom-divider{width:1px;height:20px;background:rgba(255,255,255,0.15)}
+.lightbox-zoom-label{font-size:13px;font-family:monospace;color:rgba(255,255,255,0.6);
+min-width:44px;text-align:center}
+
+.lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;
+display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);
+backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.08);
+color:#fff;cursor:pointer;border-radius:50%;transition:all 0.25s ease;z-index:10;
+opacity:0;visibility:hidden}
+.lightbox-overlay.open .lightbox-nav{opacity:1;visibility:visible}
+.lightbox-nav:hover{background:rgba(255,255,255,0.2)}
+.lightbox-nav:active{transform:translateY(-50%) scale(0.92)}
+.lightbox-nav.prev{left:20px}
+.lightbox-nav.next{right:20px}
+.lightbox-nav svg{width:20px;height:20px;display:block}
+.lightbox-nav.hidden{opacity:0;visibility:hidden}
+
+.lightbox-dots{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
+display:flex;gap:6px;z-index:10;opacity:0;visibility:hidden;transition:opacity 0.4s,visibility 0.4s}
+.lightbox-overlay.open .lightbox-dots{opacity:1;visibility:visible}
+.lightbox-dots.hidden{opacity:0;visibility:hidden}
+.lightbox-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.25);
+border:none;cursor:pointer;padding:0;transition:all 0.3s ease}
+.lightbox-dot.active{background:#fff;transform:scale(1.3);width:20px;border-radius:3px}
+.lightbox-dot:hover{background:rgba(255,255,255,0.5)}
 
 /* Utilities */
 @media(min-width:1024px){.desktop-only{display:block}}
