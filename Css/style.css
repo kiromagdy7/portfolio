@@ -72,6 +72,7 @@ transition:background 0.2s,color 0.2s;font-family:'Inter',sans-serif}
 transition:color 0.3s,background-color 0.3s,border-color 0.3s}
 .section-label{font-size:12px;text-transform:uppercase;letter-spacing:0.2em;color:var(--muted);margin-bottom:24px}
 .hero-grid{display:grid;gap:48px;padding-bottom:0}
+@media(min-width:640px){.hero-grid{grid-template-columns:1fr 1fr;align-items:start}}
 @media(min-width:1024px){.hero-grid{grid-template-columns:8fr 4fr;align-items:start}}
 .hero-left h1{font-size:56px;font-weight:900;line-height:0.95;letter-spacing:-0.02em;color:var(--text)}
 .hero-left h1 .reg{color:#2563EB}
@@ -86,7 +87,8 @@ background:#2563EB;color:#fff;border:none;cursor:pointer;transition:background 0
 border:2px solid var(--text);background:transparent;color:var(--text);cursor:pointer;
 transition:background 0.2s,color 0.2s;font-family:'Inter',sans-serif;font-size:16px}
 .btn-outline:hover{background:var(--text);color:var(--bg)}
-.hero-right{position:relative}
+.hero-right{position:relative;max-width:320px;justify-self:center}
+@media(min-width:1024px){.hero-right{max-width:none;justify-self:auto}}
 .photo-container{aspect-ratio:4/5;overflow:hidden;background:var(--section-bg);transition:background-color 0.3s}
 .photo-container img{width:100%;height:100%;object-fit:cover}
 .badge{position:absolute;bottom:16px;left:16px;background:var(--bg);padding:6px 12px;font-size:11px;
