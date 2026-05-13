@@ -121,6 +121,15 @@
     });
   }
 
+  // ============== Page Loader ==============
+  window.addEventListener('load', function () {
+    var loader = document.getElementById('pageLoader');
+    if (loader) {
+      loader.classList.add('hidden');
+      setTimeout(function () { loader.remove(); }, 500);
+    }
+  });
+
   // ============== Screenshot Lightbox ==============
   var zoomIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>';
   var arrowLeftSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
@@ -143,6 +152,11 @@
       wrap.appendChild(img);
       wrap.appendChild(zoomIcon);
 
+      wrap.classList.add('loading');
+      function ssRemoveLoading() { wrap.classList.remove('loading'); }
+      if (img.complete && img.naturalWidth > 0) { ssRemoveLoading(); }
+      else { img.addEventListener('load', ssRemoveLoading); img.addEventListener('error', ssRemoveLoading); }
+
       wrap.addEventListener('click', function () {
         var allImgs = document.querySelectorAll('.ss-item img');
         var idx = 0;
@@ -154,6 +168,15 @@
         openLightbox(imgs, idx);
       });
     });
+  }
+
+  var heroImg = document.querySelector('.photo-container img');
+  if (heroImg) {
+    var heroWrap = heroImg.closest('.photo-container');
+    heroWrap.classList.add('loading');
+    function heroRemoveLoading() { heroWrap.classList.remove('loading'); }
+    if (heroImg.complete && heroImg.naturalWidth > 0) { heroRemoveLoading(); }
+    else { heroImg.addEventListener('load', heroRemoveLoading); heroImg.addEventListener('error', heroRemoveLoading); }
   }
 
   function openLightbox(images, index) {
