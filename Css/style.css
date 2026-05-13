@@ -60,11 +60,12 @@ transition:transform 0.3s ease,opacity 0.3s ease;z-index:49}
 .mobile-dropdown a{display:block;padding:12px 0;font-size:16px;font-weight:600;color:var(--text);
 border-bottom:1px solid var(--border);cursor:pointer}
 .mobile-dropdown a:last-child{border-bottom:none}
-.mobile-dropdown .cv-btn-mobile{display:inline-flex;align-items:center;gap:6px;margin-top:16px;
-border:2px solid var(--text);padding:10px 20px;font-size:14px;font-weight:600;
-background:transparent;color:var(--text);cursor:pointer;
-transition:background 0.2s,color 0.2s;font-family:'Inter',sans-serif}
-.mobile-dropdown .cv-btn-mobile:hover{background:var(--text);color:var(--bg)}
+.mobile-dropdown a.cv-btn-mobile{display:flex;align-items:center;justify-content:center;gap:8px;
+width:100%;margin-top:16px;border:2px solid var(--text);padding:12px 20px;
+font-size:14px;font-weight:600;line-height:1.2;white-space:nowrap;background:transparent;
+color:var(--text);cursor:pointer;transition:background 0.2s,color 0.2s;font-family:'Inter',sans-serif}
+.mobile-dropdown a.cv-btn-mobile svg{width:20px;height:20px;flex:0 0 20px;display:block}
+.mobile-dropdown a.cv-btn-mobile:hover{background:var(--text);color:var(--bg)}
 @media(min-width:768px){.mobile-dropdown{display:none}}
 
 /* Hero */
